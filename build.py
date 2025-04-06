@@ -108,14 +108,13 @@ def main():
 
         # skip if the files weren't modified
         if os.path.exists(os.path.join("bin", example)) and latest_modification_time(dir) <= os.path.getmtime(os.path.join("bin", example)) and not (latest_modification_time("include") >= os.path.getmtime(os.path.join("bin", example))):
-            print(f"[skip {example}]\n")
+            print(f"[skip {example}]")
             continue
 
         for f in os.listdir(dir):
             compile(f, dir, "tmp")
         
         link(example)
-        print()
         clean()
     
     generate_compile_commands()
