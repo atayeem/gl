@@ -154,7 +154,9 @@ int main()
     // load and create a texture 
     // -------------------------
     Texture texture("assets/container2.png");
+    Texture specular_map("assets/container2_specular.png");
     texture.use_as(GL_TEXTURE0);
+    specular_map.use_as(GL_TEXTURE1);
 
     Shader ourShader("examples/13_diffuse_maps/vertex.glsl", "examples/13_diffuse_maps/fragment_object.glsl");
     Shader lightSourceShader("examples/13_diffuse_maps/vertex.glsl", "examples/13_diffuse_maps/fragment_light.glsl");
@@ -168,9 +170,10 @@ int main()
         float     shininess;
     };
     */
-    ourShader.set_int("material.diffuse", GL_TEXTURE0);
-    ourShader.set_vec3("material.specular", 0.5f, 0.5f, 0.5f);
-    ourShader.set_float("material.shininess", 32.0f);
+    ourShader.set_int("material.texture", 0);
+    ourShader.set_int("material.diffuse", 0);
+    ourShader.set_int("material.specular", 1);
+    ourShader.set_float("material.shininess", 128.0f);
 
     /*
     struct Light {
@@ -190,7 +193,6 @@ int main()
     (loop) uniform vec3 viewPos;
     uniform sampler2D tex;
     */
-    ourShader.set_int("tex", 0);
 
     lightSourceShader.use();
     lightSourceShader.set_vec3v("lightColor", lightColor);
