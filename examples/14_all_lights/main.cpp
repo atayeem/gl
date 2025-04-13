@@ -12,6 +12,39 @@
 
 #include <iostream>
 
+#define NR_POINT_LIGHTS 4
+
+using glm::vec3;
+using sampler2D = int;
+
+struct DirLight {
+    vec3 direction;
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+struct PointLight {
+    vec3 position;
+
+    float constant;
+    float linear;
+    float quadratic;
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+struct Material {
+    sampler2D texture;
+    sampler2D diffuse;
+    sampler2D specular;
+
+    float     shininess;
+};
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -164,19 +197,6 @@ int main()
     ourShader.use();
 
     /*
-    uniform DirLight dirLight;
-    uniform PointLight pointLights[NR_POINT_LIGHTS];
-    
-    uniform Material material;
-
-    struct Material {
-        sampler2D texture;
-        sampler2D diffuse;
-        sampler2D specular;
-
-        float     shininess;
-    };
-
     struct DirLight {
         vec3 direction;
 
@@ -196,8 +216,20 @@ int main()
         vec3 diffuse;
         vec3 specular;
     };
+
+    struct Material {
+        sampler2D texture;
+        sampler2D diffuse;
+        sampler2D specular;
+
+        float     shininess;
+    };
+
+    uniform DirLight dirLight;
+    uniform PointLight pointLights[NR_POINT_LIGHTS];
+    
+    uniform Material material;
     */
-    // TODO: add all the light and material declarations
 
     lightSourceShader.use();
     lightSourceShader.set_vec3v("lightColor", lightColor);
