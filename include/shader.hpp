@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <cstdlib>
 
 class Shader {
 public:
@@ -39,7 +40,8 @@ public:
         }
         catch (std::ifstream::failure e)
         {
-            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+            std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+            std::exit(-1);
         }
 
         const char* v_shader_code = vertex_code.c_str();
@@ -58,8 +60,9 @@ public:
         if (!success)
         {
             glGetShaderInfoLog(vertex, 512, NULL, info_log);
-            std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" <<
+            std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" <<
                       info_log << std::endl;
+            std::exit(-1);
         }
 
         fragment = glCreateShader(GL_FRAGMENT_SHADER);
@@ -70,8 +73,9 @@ public:
         if (!success)
         {
             glGetShaderInfoLog(fragment, 512, NULL, info_log);
-            std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" <<
+            std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" <<
                       info_log << std::endl;
+            std::exit(-1);
         }
 
         ID = glCreateProgram();
@@ -83,8 +87,9 @@ public:
         if (!success)
         {
             glGetProgramInfoLog(ID, 512, NULL, info_log);
-            std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" <<
+            std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" <<
                       info_log << std::endl;
+            std::exit(-1);
         }
 
         glDeleteShader(vertex);
@@ -98,31 +103,47 @@ public:
 
     void set_bool(const std::string &name, bool value) const
     {
-        glUniform1i(glGetUniformLocation(ID, name.c_str()), (int) value);
+        glUniform1i(loc(name), (int) value);
     }
     void set_int(const std::string &name, int value) const
     {
-        glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+        glUniform1i(loc(name), value);
     }
+
+    void set_sampler2D(const std::string &name, int value) const
+    {
+        set_int(name, value);
+    }
+
     void set_float(const std::string &name, float value) const
     {
-        glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+        glUniform1f(loc(name), value);
     }
 
     void set_mat4(const std::string &name, glm::mat4& value) const
     {
-        GLuint transformLoc = glGetUniformLocation(ID, name.c_str());
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(value));
+        glUniformMatrix4fv(loc(name), 1, GL_FALSE, glm::value_ptr(value));
     }
 
     void set_vec3v(const std::string &name, glm::vec3& value) const
     {
-        glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, glm::value_ptr(value));
+        glUniform3fv(loc(name), 1, glm::value_ptr(value));
     }
 
     void set_vec3(const std::string &name, float a, float b, float c) const
     {
         glm::vec3 vec(a, b, c);
         set_vec3v(name, vec);
+    }
+
+private:
+    GLint loc(const std::string &name) const {
+        GLint loc = glGetUniformLocation(ID, name.c_str());
+        if (loc == -1) {
+            std::cerr << "Failed to find uniform '" << name << "'";
+            std::exit(-1);
+        }
+
+        return loc;
     }
 };

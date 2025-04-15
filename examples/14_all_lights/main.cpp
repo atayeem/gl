@@ -15,17 +15,30 @@
 #define NR_POINT_LIGHTS 4
 
 using glm::vec3;
+using std::string;
 using sampler2D = int;
+#define set_sampler2D set_int
 
 struct DirLight {
+    string name;
+
     vec3 direction;
 
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+
+    void use(const Shader& shader) {
+        shader.set_vec3v(name + ".direction", direction);
+        shader.set_vec3v(name + ".ambient", ambient);
+        shader.set_vec3v(name + ".diffuse", diffuse);
+        shader.set_vec3v(name + ".specular", specular);
+    }
 };
 
 struct PointLight {
+    string name;
+
     vec3 position;
 
     float constant;
@@ -35,14 +48,35 @@ struct PointLight {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+
+    void use(const Shader& shader) {
+        shader.set_vec3v(name + ".position", position);
+
+        shader.set_float(name + ".constant", constant);
+        shader.set_float(name + ".linear", linear);
+        shader.set_float(name + ".quadratic", quadratic);
+
+        shader.set_vec3v(name + ".ambient", ambient);
+        shader.set_vec3v(name + ".diffuse", diffuse);
+        shader.set_vec3v(name + ".specular", specular);
+    }
 };
 
 struct Material {
+    string name;
+
     sampler2D texture;
     sampler2D diffuse;
     sampler2D specular;
 
     float     shininess;
+
+    void use(const Shader& shader) {
+        shader.set_sampler2D(name + ".direction", direction);
+        shader.set_vec3v(name + ".ambient", ambient);
+        shader.set_vec3v(name + ".diffuse", diffuse);
+        shader.set_vec3v(name + ".specular", specular);
+    }
 };
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -63,11 +97,6 @@ bool firstMouse = true;
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
-
-// lighting
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
-glm::vec3 objectColor(1.0f, 0.5f, 0.31f);
 
 int main()
 {
@@ -195,41 +224,6 @@ int main()
     Shader lightSourceShader("examples/14_all_lights/vertex.glsl", "examples/14_all_lights/fragment_light.glsl");
 
     ourShader.use();
-
-    /*
-    struct DirLight {
-        vec3 direction;
-
-        vec3 ambient;
-        vec3 diffuse;
-        vec3 specular;
-    };
-
-    struct PointLight {
-        vec3 position;
-
-        float constant;
-        float linear;
-        float quadratic;
-
-        vec3 ambient;
-        vec3 diffuse;
-        vec3 specular;
-    };
-
-    struct Material {
-        sampler2D texture;
-        sampler2D diffuse;
-        sampler2D specular;
-
-        float     shininess;
-    };
-
-    uniform DirLight dirLight;
-    uniform PointLight pointLights[NR_POINT_LIGHTS];
-    
-    uniform Material material;
-    */
 
     lightSourceShader.use();
     lightSourceShader.set_vec3v("lightColor", lightColor);
