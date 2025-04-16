@@ -1,3 +1,5 @@
+#pragma once
+
 #include "glm/detail/type_mat.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include <glad/glad.h>

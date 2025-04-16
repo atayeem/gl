@@ -9,75 +9,21 @@
 #include <camera.hpp>
 #include <shader.hpp>
 #include <texture.hpp>
+#include <lights.hpp>
 
 #include <iostream>
+#include <vector>
 
 #define NR_POINT_LIGHTS 4
 
-using glm::vec3;
-using std::string;
-using sampler2D = int;
-#define set_sampler2D set_int
+std::vector<PointLight> create_point_lights(std::string& name, std::size_t count) {
+    std::vector<PointLight> lights{count};
 
-struct DirLight {
-    string name;
-
-    vec3 direction;
-
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-
-    void use(const Shader& shader) {
-        shader.set_vec3v(name + ".direction", direction);
-        shader.set_vec3v(name + ".ambient", ambient);
-        shader.set_vec3v(name + ".diffuse", diffuse);
-        shader.set_vec3v(name + ".specular", specular);
-    }
-};
-
-struct PointLight {
-    string name;
-
-    vec3 position;
-
-    float constant;
-    float linear;
-    float quadratic;
-
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-
-    void use(const Shader& shader) {
-        shader.set_vec3v(name + ".position", position);
-
-        shader.set_float(name + ".constant", constant);
-        shader.set_float(name + ".linear", linear);
-        shader.set_float(name + ".quadratic", quadratic);
-
-        shader.set_vec3v(name + ".ambient", ambient);
-        shader.set_vec3v(name + ".diffuse", diffuse);
-        shader.set_vec3v(name + ".specular", specular);
-    }
-};
-
-struct Material {
-    string name;
-
-    sampler2D texture;
-    sampler2D diffuse;
-    sampler2D specular;
-
-    float     shininess;
-
-    void use(const Shader& shader) {
-        shader.set_sampler2D(name + ".direction", direction);
-        shader.set_vec3v(name + ".ambient", ambient);
-        shader.set_vec3v(name + ".diffuse", diffuse);
-        shader.set_vec3v(name + ".specular", specular);
-    }
-};
+    for (std::size_t i = 0; i < count; ++i) 
+        lights[i].name = name + "[" + std::to_string(i) + "]";
+    
+    return lights;
+}
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
