@@ -149,16 +149,6 @@ int main()
         glEnableVertexAttribArray(2);
     }
 
-    #if 0
-    unsigned lightVAO;
-    glGenVertexArrays(1, &lightVAO);
-    glBindVertexArray(lightVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    #endif
-
     // load and create a texture 
     // -------------------------
     Texture texture("assets/container2.png");
