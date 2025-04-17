@@ -21,7 +21,8 @@ struct DirLight {
     vec3 diffuse;
     vec3 specular;
 
-    void use(const Shader& shader) {
+    void use(const Shader& shader) const
+    {
         shader.set_vec3v(name + ".direction", direction);
         shader.set_vec3v(name + ".ambient", ambient);
         shader.set_vec3v(name + ".diffuse", diffuse);
@@ -42,7 +43,8 @@ struct PointLight {
     vec3 diffuse;
     vec3 specular;
 
-    void use(const Shader& shader) {
+    void use(const Shader& shader) const
+    {
         shader.set_vec3v(name + ".position", position);
 
         shader.set_float(name + ".constant", constant);
@@ -52,6 +54,11 @@ struct PointLight {
         shader.set_vec3v(name + ".ambient", ambient);
         shader.set_vec3v(name + ".diffuse", diffuse);
         shader.set_vec3v(name + ".specular", specular);
+    }
+
+    void using_light_color(const Shader& light_shader) const
+    {
+        light_shader.set_vec3v("lightColor", ambient);
     }
 };
 
@@ -64,7 +71,8 @@ struct Material {
 
     float     shininess;
 
-    void use(const Shader& shader) {
+    void use(const Shader& shader) const
+    {
         shader.set_sampler2D(name + ".texture", texture);
         shader.set_sampler2D(name + ".diffuse", diffuse);
         shader.set_sampler2D(name + ".specular", specular);

@@ -127,7 +127,7 @@ public:
         glUniformMatrix4fv(loc(name), 1, GL_FALSE, glm::value_ptr(value));
     }
 
-    void set_vec3v(const std::string &name, glm::vec3& value) const
+    void set_vec3v(const std::string &name, const glm::vec3& value) const
     {
         glUniform3fv(loc(name), 1, glm::value_ptr(value));
     }

@@ -16,7 +16,7 @@
 
 #define NR_POINT_LIGHTS 4
 
-std::vector<PointLight> create_point_lights(std::string& name, std::size_t count) {
+std::vector<PointLight> create_point_lights(const std::string& name, std::size_t count) {
     std::vector<PointLight> lights{count};
 
     for (std::size_t i = 0; i < count; ++i) 
@@ -159,6 +159,7 @@ int main()
     Shader ourShader("examples/14_all_lights/vertex.glsl", "examples/14_all_lights/fragment_object.glsl");
     Shader lightSourceShader("examples/14_all_lights/vertex.glsl", "examples/14_all_lights/fragment_light.glsl");
 
+    auto point_lights = create_point_lights("pointLights", NR_POINT_LIGHTS);
     ourShader.use();
 
     lightSourceShader.use();
