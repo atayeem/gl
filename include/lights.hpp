@@ -56,7 +56,7 @@ struct PointLight {
         shader.set_vec3v(name + ".specular", specular);
     }
 
-    void using_light_color(const Shader& light_shader) const
+    void draw(const Shader& light_shader) const
     {
         light_shader.set_vec3v("lightColor", ambient);
     }

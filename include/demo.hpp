@@ -1,52 +1,97 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <stb_image.h>
+#ifndef _DEMO_HPP
+#define _DEMO_HPP
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <GLFW/glfw3.h>
 
-#include <camera.hpp>
-#include <shader.hpp>
-#include <texture.hpp>
-#include <lights.hpp>
 
-#include <iostream>
-#include <vector>
+#include <glad/glad.h>
+#include "shader.hpp"
+#include "camera.hpp"
 
-#define NR_POINT_LIGHTS 4
-
-std::vector<PointLight> create_point_lights(const std::string& name, std::size_t count) {
-    std::vector<PointLight> lights{count};
-
-    for (std::size_t i = 0; i < count; ++i) 
-        lights[i].name = name + "[" + std::to_string(i) + "]";
-    
-    return lights;
-}
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow *window);
-
-// settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-// camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
+namespace Demo {
 
-// timing
-float deltaTime = 0.0f;	// time between current frame and last frame
-float lastFrame = 0.0f;
+class Window {
+private:
+    Camera camera;
+    float deltaTime = 0.0f;
+    float lastFrame = 0.0f;
+    float lastX = SCR_WIDTH / 2.0f;
+    float lastY = SCR_HEIGHT / 2.0f;
+    bool firstMouse = true;
 
-int main()
-{
-    // glfw: initialize and configure
+    // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+    // ---------------------------------------------------------------------------------------------------------
+    void processInput(GLFWwindow *window)
+    {
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, true);
+
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            camera.ProcessKeyboard(FORWARD, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            camera.ProcessKeyboard(BACKWARD, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            camera.ProcessKeyboard(LEFT, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            camera.ProcessKeyboard(RIGHT, deltaTime);
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+            camera.ProcessKeyboard(DOWN, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+            camera.ProcessKeyboard(UP, deltaTime);
+    }
+
+    // glfw: whenever the window size changed (by OS or user resize) this callback function executes
+    // ---------------------------------------------------------------------------------------------
+    void framebuffer_size_callback(GLFWwindow*, int width, int height)
+    {
+        // make sure the viewport matches the new window dimensions; note that width and 
+        // height will be significantly larger than specified on retina displays.
+        glViewport(0, 0, width, height);
+    }
+
+
+    // glfw: whenever the mouse moves, this callback is called
+    // -------------------------------------------------------
+    void mouse_callback(GLFWwindow*, double xposIn, double yposIn)
+    {
+        float xpos = static_cast<float>(xposIn);
+        float ypos = static_cast<float>(yposIn);
+
+        if (firstMouse)
+        {
+            lastX = xpos;
+            lastY = ypos;
+            firstMouse = false;
+        }
+
+        float xoffset = xpos - lastX;
+        float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+        lastX = xpos;
+        lastY = ypos;
+
+        camera.ProcessMouseMovement(xoffset, yoffset);
+    }
+
+    // glfw: whenever the mouse scroll wheel scrolls, this callback is called
+    // ----------------------------------------------------------------------
+    void scroll_callback(GLFWwindow*, double, double yoffset)
+    {
+        camera.ProcessMouseScroll(static_cast<float>(yoffset));
+    }
+
+public:
+    Window() :
+        camera(glm::vec3(0.0f, 0.0f, 3.0f))
+    {
+            // glfw: initialize and configure
     // ------------------------------
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -55,12 +100,12 @@ int main()
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "14_all_lights", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "13_diffuse_maps", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
-        return -1;
+        std::exit(-1);
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -75,12 +120,23 @@ int main()
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
+        std::exit(-1);
     }
 
     // configure global opengl state
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
+    }
+};
+
+}
+#else
+#error You included it twice you dumb bunny
+#endif
+
+int main()
+{
+
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -149,6 +205,16 @@ int main()
         glEnableVertexAttribArray(2);
     }
 
+    #if 0
+    unsigned lightVAO;
+    glGenVertexArrays(1, &lightVAO);
+    glBindVertexArray(lightVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    #endif
+
     // load and create a texture 
     // -------------------------
     Texture texture("assets/container2.png");
@@ -156,11 +222,44 @@ int main()
     texture.use_as(GL_TEXTURE0);
     specular_map.use_as(GL_TEXTURE1);
 
-    Shader ourShader("examples/14_all_lights/vertex.glsl", "examples/14_all_lights/fragment_object.glsl");
-    Shader lightSourceShader("examples/14_all_lights/vertex.glsl", "examples/14_all_lights/fragment_light.glsl");
+    Shader ourShader("examples/13_diffuse_maps/vertex.glsl", "examples/13_diffuse_maps/fragment_object.glsl");
+    Shader lightSourceShader("examples/13_diffuse_maps/vertex.glsl", "examples/13_diffuse_maps/fragment_light.glsl");
 
-    auto point_lights = create_point_lights("pointLights", NR_POINT_LIGHTS);
     ourShader.use();
+
+    /*
+    struct Material {
+        sampler2D diffuse;
+        vec3      specular;
+        float     shininess;
+    };
+    */
+    ourShader.set_int("material.texture", 0);
+    ourShader.set_int("material.diffuse", 0);
+    ourShader.set_int("material.specular", 1);
+    ourShader.set_float("material.shininess", 128.0f);
+
+    /*
+    struct Light {
+        vec3 position;
+
+        vec3 ambient;
+        vec3 diffuse;
+        vec3 specular;
+    };
+    */
+    ourShader.set_vec3("light.ambient", 0.6f, 0.6f, 0.6f);
+    ourShader.set_vec3("light.diffuse", 0.95f, 0.95f, 0.95f);
+    ourShader.set_vec3("light.specular", 1.0f, 1.0f, 1.0f);
+    ourShader.set_vec3v("light.position", lightPos);
+
+    /*
+    (loop) uniform vec3 viewPos;
+    uniform sampler2D tex;
+    */
+
+    lightSourceShader.use();
+    lightSourceShader.set_vec3v("lightColor", lightColor);
 
     // render loop
     // -----------
@@ -229,64 +328,3 @@ int main()
     return 0;
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
-
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        camera.ProcessKeyboard(DOWN, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        camera.ProcessKeyboard(UP, deltaTime);
-}
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow*, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-}
-
-
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
-void mouse_callback(GLFWwindow*, double xposIn, double yposIn)
-{
-    float xpos = static_cast<float>(xposIn);
-    float ypos = static_cast<float>(yposIn);
-
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-    lastX = xpos;
-    lastY = ypos;
-
-    camera.ProcessMouseMovement(xoffset, yoffset);
-}
-
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
-void scroll_callback(GLFWwindow*, double, double yoffset)
-{
-    camera.ProcessMouseScroll(static_cast<float>(yoffset));
-}
