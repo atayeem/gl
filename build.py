@@ -36,7 +36,7 @@ CXXFLAGS = CFLAGS
 
 LFLAGS = s([
     "-L/usr/local/lib",
-    "-lglfw3",
+    "-lglfw",
     "-lGL",
     "-lm",
     #"-lX11",
